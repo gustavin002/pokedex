@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore os Pokémon, descubra seus tipos, habilidades e estatísticas nesta Pokédex interativa.">
+    <meta name="theme-color" content="#ef5350">
+    <title>Pokédex | Explorador Pokémon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="pokedex.js" defer></script>
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="container cabecalho-conteudo">
+            <a class="marca" href="#" aria-label="Página inicial da Pokédex">
+                <span class="marca-icone" aria-hidden="true"><span></span></span>
+                <span>Poké<span class="marca-destaque">dex</span></span>
+            </a>
+            <button class="botao-favoritos" id="botao-favoritos" type="button" aria-pressed="false">
+                <span aria-hidden="true">♥</span> Favoritos <span class="contador-favoritos" id="contador-favoritos">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="secao-pokedex" id="colecao">
+            <div class="container">
+                <div class="titulo-secao">
+                    <div>
+                        <span class="sobretitulo">CATÁLOGO POKÉMON</span>
+                        <h2>Explore a Pokédex</h2>
+                        <p>Pesquise, filtre e descubra informações sobre seus Pokémon.</p>
+                    </div>
+                    <div class="total-encontrados"><span id="quantidade-resultados">Carregando...</span><small>resultados</small></div>
+                </div>
+
+                <div class="painel-filtros">
+                    <label class="campo-pesquisa">
+                        <span class="icone-pesquisa" aria-hidden="true">⌕</span>
+                        <input id="campo-pesquisa" type="search" placeholder="Buscar por nome ou número..." autocomplete="off">
+                        <kbd>⌕</kbd>
+                    </label>
+                </div>
+
+                <div class="filtros-tipos">
+                    <span class="label-filtros">FILTRAR POR TIPO</span>
+                    <div class="lista-tipos" id="lista-tipos">
+                        <button class="filtro-tipo selecionado" data-tipo="todos" type="button">Todos</button>
+                    </div>
+                </div>
+
+                <div class="barra-listagem">
+                    <span id="texto-filtro">Todos os Pokémon</span>
+                    <button class="limpar-filtros" id="limpar-filtros" type="button">Limpar filtros <span aria-hidden="true">↺</span></button>
+                </div>
+
+                <div class="grade-pokemon" id="grade-pokemon" aria-live="polite">
+                    <div class="estado-carregamento"><span class="spinner"></span><p>Carregando Pokémon...</p></div>
+                </div>
+
+                <div class="mensagem-vazia" id="mensagem-vazia" hidden>
+                    <span aria-hidden="true">🔎</span>
+                    <h3>Nenhum Pokémon encontrado</h3>
+                    <p>Tente outro nome, número ou tipo.</p>
+                    <button class="botao-secundario" id="limpar-busca" type="button">Limpar pesquisa</button>
+                </div>
+
+                <div class="area-carregar">
+                    <p id="texto-paginacao">Mostrando Pokémon</p>
+                    <button class="botao-carregar" id="botao-carregar" type="button">Carregar mais Pokémon <span aria-hidden="true">↓</span></button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="rodape">
+        <div class="container rodape-conteudo">
+            <a class="marca marca-rodape" href="#"><span class="marca-icone" aria-hidden="true"><span></span></span><span>Poké<span class="marca-destaque">dex</span></span></a>
+            <p>Projeto desenvolvido com dados da <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a>.</p>
+            <span>Feito para quem ama Pokémon ♥</span>
+        </div>
+    </footer>
+
+    <div class="modal" id="modal-pokemon" aria-hidden="true">
+        <div class="modal-fundo" data-fechar-modal></div>
+        <section class="modal-conteudo" role="dialog" aria-modal="true" aria-labelledby="modal-nome">
+            <button class="modal-fechar" id="modal-fechar" type="button" aria-label="Fechar detalhes">×</button>
+            <div id="modal-corpo">
+                <div class="estado-carregamento"><span class="spinner"></span><p>Carregando detalhes...</p></div>
+            </div>
+        </section>
+    </div>
+
+    <div class="aviso-toast" id="aviso-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
