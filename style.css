@@ -1038,10 +1038,6 @@ a {
   background: var(--cor-destaque-escura);
 }
 
-/* =====================================================
-   PARTY, LABORATÓRIO E JANELA DE TROCA
-   ===================================================== */
-
 .party,
 .laboratorio {
   padding: 0 0 60px;
@@ -1149,6 +1145,11 @@ a {
 
 .botao-capturar:hover {
   background: var(--cor-destaque-escura);
+}
+
+.botao-capturar:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .dialogo {

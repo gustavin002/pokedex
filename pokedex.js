@@ -637,7 +637,9 @@ function desenharCarvalho() {
   elementos.listaCarvalho.innerHTML = "";
 
   carvalho.forEach((pokemon) => {
-    elementos.listaCarvalho.appendChild(criarItemPokemon(pokemon));
+    elementos.listaCarvalho.appendChild(
+      criarItemPokemon(pokemon, "Pegar de volta", pegarDeVolta)
+    );
   });
 
   elementos.tituloCarvalho.textContent = `Com o Professor Carvalho (${carvalho.length})`;
@@ -651,15 +653,33 @@ function salvarEDesenhar() {
   desenharCarvalho();
 }
 
-function capturarPokemonAtual() {
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const CHANCE_CAPTURA = 0.7; // 70%
+
+async function capturarPokemonAtual() {
   if (!pokemonAtual) return;
+
+  const alvo = pokemonAtual;
+  const botao = document.querySelector("#botao-capturar");
+
+  if (botao) botao.disabled = true;
+  mostrarAviso("A pokébola está balançando...");
+
+  await esperar(1500);
+
+  if (botao) botao.disabled = false;
+
+  if (Math.random() >= CHANCE_CAPTURA) {
+    mostrarAviso(`${alvo.name} escapou da pokébola! Tente de novo.`, true);
+    return;
+  }
 
   const novo = {
     codigo: Date.now(),
-    id: pokemonAtual.id,
-    nome: pokemonAtual.name,
-    imagem:
-      pokemonAtual.sprites.front_default || obterImagemPokemon(pokemonAtual),
+    id: alvo.id,
+    nome: alvo.name,
+    imagem: alvo.sprites.front_default || obterImagemPokemon(alvo),
   };
 
   if (party.length < LIMITE_PARTY) {
@@ -684,6 +704,24 @@ function enviarAoCarvalho(codigo, avisar = true) {
   }
 }
 
+function pegarDeVolta(codigo) {
+  const pokemon = carvalho.find((p) => p.codigo === codigo);
+  if (!pokemon) return;
+
+  if (party.length >= LIMITE_PARTY) {
+    mostrarAviso(
+      "A party está cheia. Envie alguém ao Professor Carvalho primeiro.",
+      true
+    );
+    return;
+  }
+
+  carvalho = carvalho.filter((p) => p.codigo !== codigo);
+  party.push(pokemon);
+  salvarEDesenhar();
+  mostrarAviso(`${pokemon.nome} voltou para a party.`);
+}
+
 function pedirSubstituicao(novoPokemon) {
   pokemonPendente = novoPokemon;
 
@@ -704,7 +742,7 @@ function trocarPokemon(codigo) {
 
   const capturado = pokemonPendente;
 
-  enviarAoCarvalho(codigo, false);2
+  enviarAoCarvalho(codigo, false);
   party.push(capturado);
   salvarEDesenhar();
 
@@ -787,7 +825,6 @@ elementos.modal.addEventListener("click", (evento) => {
 });
 
 document.addEventListener("keydown", (evento) => {
-
   if (elementos.dialogoTroca.open) return;
 
   if (evento.key === "Escape" && elementos.modal.classList.contains("aberto")) {
