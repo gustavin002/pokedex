@@ -1,5 +1,6 @@
 const API_URL = "https://pokeapi.co/api/v2";
 const QUANTIDADE_POR_PAGINA = 24;
+const LIMITE_PARTY = 6;
 
 const nomesTipos = {
   normal: "Normal",
@@ -58,7 +59,25 @@ const elementos = {
   modalCorpo: document.querySelector("#modal-corpo"),
   modalFechar: document.querySelector("#modal-fechar"),
   aviso: document.querySelector("#aviso-toast"),
+  tituloParty: document.querySelector("#titulo-party"),
+  listaParty: document.querySelector("#party"),
+  tituloCarvalho: document.querySelector("#titulo-carvalho"),
+  carvalhoVazio: document.querySelector("#carvalho-vazio"),
+  listaCarvalho: document.querySelector("#carvalho"),
+  dialogoTroca: document.querySelector("#dialogo-troca"),
+  textoTroca: document.querySelector("#texto-troca"),
+  opcoesTroca: document.querySelector("#opcoes-troca"),
+  cancelarCaptura: document.querySelector("#cancelar-captura"),
 };
+
+function carregarLista(chave) {
+  try {
+    const salvo = JSON.parse(localStorage.getItem(chave));
+    return Array.isArray(salvo) ? salvo : [];
+  } catch (erro) {
+    return [];
+  }
+}
 
 let todosPokemon = [];
 let pokemonExibidos = [];
@@ -67,6 +86,11 @@ let tipoSelecionado = "todos";
 let somenteFavoritos = false;
 let quantidadeVisivel = QUANTIDADE_POR_PAGINA;
 let temporizadorAviso;
+
+let party = carregarLista("pokedex-party");
+let carvalho = carregarLista("pokedex-carvalho");
+let pokemonAtual = null;
+let pokemonPendente = null;
 
 async function iniciarPokedex() {
   criarFiltrosDeTipo();
@@ -349,6 +373,7 @@ async function abrirDetalhesPokemon(id) {
   elementos.modal.classList.add("aberto");
   elementos.modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  pokemonAtual = null;
   elementos.modalCorpo.innerHTML = `
         <div class="estado-carregamento">
             <span class="spinner"></span>
@@ -375,9 +400,14 @@ async function abrirDetalhesPokemon(id) {
       especie,
       descricao
     );
+    pokemonAtual = pokemon;
+
     document
       .querySelector("#favorito-modal")
       .addEventListener("click", () => alternarFavorito(pokemon.id));
+    document
+      .querySelector("#botao-capturar")
+      .addEventListener("click", capturarPokemonAtual);
   } catch (erro) {
     elementos.modalCorpo.innerHTML = `
             <div class="estado-carregamento">
@@ -445,13 +475,16 @@ function criarDetalhesPokemon(pokemon, especie, descricao) {
                 <div class="tipos-pokemon">${pokemon.types
                   .map((item) => criarTagTipo(item.type.name))
                   .join("")}</div>
-                <button class="botao-favorito-modal" id="favorito-modal" type="button">
-                    ${
-                      estaFavoritado
-                        ? "♥ Remover dos favoritos"
-                        : "♡ Adicionar aos favoritos"
-                    }
-                </button>
+                <div class="modal-acoes">
+                    <button class="botao-favorito-modal" id="favorito-modal" type="button">
+                        ${
+                          estaFavoritado
+                            ? "♥ Remover dos favoritos"
+                            : "♡ Adicionar aos favoritos"
+                        }
+                    </button>
+                    <button class="botao-capturar" id="botao-capturar" type="button">Capturar</button>
+                </div>
             </div>
         </div>
 
@@ -523,9 +556,10 @@ function fecharModal() {
   document.body.style.overflow = "";
 }
 
-function mostrarAviso(mensagem) {
+function mostrarAviso(mensagem, alerta = false) {
   clearTimeout(temporizadorAviso);
   elementos.aviso.textContent = mensagem;
+  elementos.aviso.classList.toggle("alerta", alerta);
   elementos.aviso.classList.add("visivel");
 
   temporizadorAviso = setTimeout(() => {
@@ -551,6 +585,145 @@ function limparFiltros() {
   atualizarContadorFavoritos();
   aplicarFiltros();
 }
+
+function criarItemPokemon(pokemon, textoBotao, aoClicar) {
+  const li = document.createElement("li");
+  li.className = "slot-pokemon";
+
+  const imagem = document.createElement("img");
+  imagem.src = pokemon.imagem;
+  imagem.alt = pokemon.nome;
+
+  const nome = document.createElement("span");
+  nome.className = "slot-nome";
+  nome.textContent = pokemon.nome;
+
+  li.append(imagem, nome);
+
+  if (textoBotao) {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "botao-enviar";
+    botao.textContent = textoBotao;
+    botao.addEventListener("click", () => aoClicar(pokemon.codigo));
+    li.appendChild(botao);
+  }
+
+  return li;
+}
+
+function desenharParty() {
+  elementos.listaParty.innerHTML = "";
+
+  for (let i = 0; i < LIMITE_PARTY; i++) {
+    const pokemon = party[i];
+
+    if (pokemon === undefined) {
+      const vazio = document.createElement("li");
+      vazio.className = "vazio";
+      vazio.textContent = "Vazio";
+      elementos.listaParty.appendChild(vazio);
+    } else {
+      elementos.listaParty.appendChild(
+        criarItemPokemon(pokemon, "Enviar ao Prof. Carvalho", enviarAoCarvalho)
+      );
+    }
+  }
+
+  elementos.tituloParty.textContent = `Minha party (${party.length}/${LIMITE_PARTY})`;
+}
+
+function desenharCarvalho() {
+  elementos.listaCarvalho.innerHTML = "";
+
+  carvalho.forEach((pokemon) => {
+    elementos.listaCarvalho.appendChild(criarItemPokemon(pokemon));
+  });
+
+  elementos.tituloCarvalho.textContent = `Com o Professor Carvalho (${carvalho.length})`;
+  elementos.carvalhoVazio.hidden = carvalho.length > 0;
+}
+
+function salvarEDesenhar() {
+  localStorage.setItem("pokedex-party", JSON.stringify(party));
+  localStorage.setItem("pokedex-carvalho", JSON.stringify(carvalho));
+  desenharParty();
+  desenharCarvalho();
+}
+
+function capturarPokemonAtual() {
+  if (!pokemonAtual) return;
+
+  const novo = {
+    codigo: Date.now(),
+    id: pokemonAtual.id,
+    nome: pokemonAtual.name,
+    imagem:
+      pokemonAtual.sprites.front_default || obterImagemPokemon(pokemonAtual),
+  };
+
+  if (party.length < LIMITE_PARTY) {
+    party.push(novo);
+    salvarEDesenhar();
+    mostrarAviso(`Você capturou ${novo.nome}!`);
+  } else {
+    pedirSubstituicao(novo);
+  }
+}
+
+function enviarAoCarvalho(codigo, avisar = true) {
+  const pokemon = party.find((p) => p.codigo === codigo);
+  if (!pokemon) return;
+
+  party = party.filter((p) => p.codigo !== codigo);
+  carvalho.push(pokemon);
+  salvarEDesenhar();
+
+  if (avisar) {
+    mostrarAviso(`${pokemon.nome} foi enviado ao Professor Carvalho.`);
+  }
+}
+
+function pedirSubstituicao(novoPokemon) {
+  pokemonPendente = novoPokemon;
+
+  elementos.textoTroca.textContent = `Quem vai para o Professor Carvalho para abrir espaço para ${novoPokemon.nome}?`;
+  elementos.opcoesTroca.innerHTML = "";
+
+  party.forEach((pokemon) => {
+    elementos.opcoesTroca.appendChild(
+      criarItemPokemon(pokemon, `Enviar ${pokemon.nome}`, trocarPokemon)
+    );
+  });
+
+  elementos.dialogoTroca.showModal();
+}
+
+function trocarPokemon(codigo) {
+  if (!pokemonPendente) return;
+
+  const capturado = pokemonPendente;
+
+  enviarAoCarvalho(codigo, false);2
+  party.push(capturado);
+  salvarEDesenhar();
+
+  pokemonPendente = null;
+  elementos.dialogoTroca.close();
+
+  mostrarAviso(`Você capturou ${capturado.nome}!`);
+}
+
+elementos.dialogoTroca.addEventListener("close", () => {
+  if (pokemonPendente) {
+    mostrarAviso(`Captura cancelada. ${pokemonPendente.nome} fugiu!`, true);
+    pokemonPendente = null;
+  }
+});
+
+elementos.cancelarCaptura.addEventListener("click", () => {
+  elementos.dialogoTroca.close();
+});
 
 elementos.campoPesquisa.addEventListener("input", aplicarFiltros);
 elementos.botaoCarregar.addEventListener("click", carregarMaisPokemon);
@@ -614,9 +787,14 @@ elementos.modal.addEventListener("click", (evento) => {
 });
 
 document.addEventListener("keydown", (evento) => {
+
+  if (elementos.dialogoTroca.open) return;
+
   if (evento.key === "Escape" && elementos.modal.classList.contains("aberto")) {
     fecharModal();
   }
 });
 
+desenharParty();
+desenharCarvalho();
 iniciarPokedex();

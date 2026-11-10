@@ -895,7 +895,6 @@ a {
 }
 
 .botao-favorito-modal {
-  margin-top: 18px;
   padding: 9px 13px;
   border: 1px solid #f2c5c3;
   border-radius: 8px;
@@ -1035,6 +1034,162 @@ a {
   transform: translateY(0);
 }
 
+.aviso-toast.alerta {
+  background: var(--cor-destaque-escura);
+}
+
+/* =====================================================
+   PARTY, LABORATÓRIO E JANELA DE TROCA
+   ===================================================== */
+
+.party,
+.laboratorio {
+  padding: 0 0 60px;
+}
+
+.laboratorio {
+  padding-bottom: 80px;
+}
+
+.party h2,
+.laboratorio h2 {
+  margin-bottom: 16px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.8px;
+}
+
+.texto-suave {
+  margin-bottom: 14px;
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+}
+
+.slots {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.slots li {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 14px;
+  background: #fff;
+  text-align: center;
+}
+
+.slots li.vazio {
+  min-height: 150px;
+  border-style: dashed;
+  background: transparent;
+  color: #a5a8b5;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.slots li img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.slot-nome {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.botao-enviar {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #f2b4b1;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--cor-destaque);
+  font-size: 0.68rem;
+  font-weight: 900;
+  transition: 0.2s ease;
+}
+
+.botao-enviar:hover {
+  background: var(--cor-destaque);
+  color: #fff;
+}
+
+.modal-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.botao-capturar {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cor-destaque);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  transition: background 0.2s ease;
+}
+
+.botao-capturar:hover {
+  background: var(--cor-destaque-escura);
+}
+
+.dialogo {
+  width: min(720px, calc(100% - 32px));
+  margin: auto;
+  padding: 26px;
+  border: 0;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--cor-texto);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+}
+
+.dialogo::backdrop {
+  background: rgba(22, 25, 39, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.dialogo h2 {
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.dialogo p {
+  margin-bottom: 18px;
+  color: var(--cor-texto-suave);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.dialogo .slots {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dialogo .botao-secundario {
+  display: block;
+  margin: 20px 0 0 auto;
+  background: #656b7c;
+}
+
 @media (max-width: 900px) {
   .hero-conteudo {
     min-height: 420px;
@@ -1050,6 +1205,10 @@ a {
   }
 
   .grade-pokemon {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .slots {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -1202,6 +1361,16 @@ a {
     font-size: 0.61rem;
   }
 
+  .slots,
+  .dialogo .slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .dialogo {
+    padding: 20px 16px;
+  }
+
   .rodape-conteudo {
     flex-direction: column;
     gap: 9px;
@@ -1236,7 +1405,8 @@ a {
     text-align: center;
   }
 
-  .modal-identificacao .tipos-pokemon {
+  .modal-identificacao .tipos-pokemon,
+  .modal-acoes {
     justify-content: center;
   }
 
